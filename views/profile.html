@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>{{title}}</title>
+    <meta name="viewport" content="width=device-width, user-scalable=no">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <link rel="stylesheet" href="/main.css">
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+  </head>
+  <body>
+    <div class="container">
+      <div class="row my-3 align-items-md-stretch">
+        <a id="home" href="/">
+          <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="currentColor" class="bi bi-house-door-fill" viewBox="0 0 16 16">
+            <path d="M6.5 14.5v-3.505c0-.245.25-.495.5-.495h2c.25 0 .5.25.5.5v3.5a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5v-7a.5.5 0 0 0-.146-.354L13 5.793V2.5a.5.5 0 0 0-.5-.5h-1a.5.5 0 0 0-.5.5v1.293L8.354 1.146a.5.5 0 0 0-.708 0l-6 6A.5.5 0 0 0 1.5 7.5v7a.5.5 0 0 0 .5.5h4a.5.5 0 0 0 .5-.5z"/>
+          </svg>
+        </a>
+        <div class="col">
+          <div class="h-100 p-5 bg-light rounded-3">
+          {% if user and user.id %}
+            <div class="row">
+              <div class="mb-3">
+                {% if user.lockId == 0%}
+                  <a id="lock" href="/auth/lock" class="btn btn-outline-dark">비공개 계정 전환</a>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-unlock-fill" viewBox="0 0 16 16">
+                    <path d="M11 1a2 2 0 0 0-2 2v4a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V9a2 2 0 0 1 2-2h5V3a3 3 0 0 1 6 0v4a.5.5 0 0 1-1 0V3a2 2 0 0 0-2-2z"/>
+                  </svg>
+                {% else %}
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor" class="bi bi-lock" viewBox="0 0 16 16">
+                    <path d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2zM5 8h6a1 1 0 0 1 1 1v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/>
+                  </svg>
+                  <a id="lock" href="/auth/unlock" class="btn btn-dark">공개 계정 전환</a>
+                {%endif%}
+              </div>  
+            </div>
+            <form id="profile-form" action="/user/profile" method="post">
+              {% if able==1 %}
+              <fieldset abled>
+              {% else %}
+              <fieldset disabled>
+              {%endif%}
+                <div class="row mb-3">
+                  <div class="col-5 themed-grid-col text-center">
+                    <img src="{{user.img}}" id="img-preview" alt="" width="96" height="96" class="border border-secondary rounded-circle me-2">
+                    <input id="img-url" type="hidden" name="url" value="{{user.img}}">
+                  </div>
+                  <div class="col-7 themed-grid-col"> 
+                      <div class="half">
+                        <div>팔로잉</div>
+                        <div class="count following-count">{{followingCount}}</div>
+                      </div>
+                      <div class="half">
+                        <div>팔로워</div>
+                        <div class="count follower-count">{{followerCount}}</div>
+                      </div>
+                  </div>
+                  <div class="input-group mt-3">
+                    <input id="img2" type="file" accept="image/*">
+                    <label id="update-img" for="img2"></label>
+                  </div>
+                </div>
+                <hr>
+                <div class="input-group">
+                  <label for="update-nick">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-tags-fill" viewBox="0 0 16 16">
+                      <path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/>
+                      <path d="M1.293 7.793A1 1 0 0 1 1 7.086V2a1 1 0 0 0-1 1v4.586a1 1 0 0 0 .293.707l7 7a1 1 0 0 0 1.414 0l.043-.043-7.457-7.457z"/>
+                    </svg>
+                    닉네임</label>
+                  <input id="update-nick" type="text" name="nick" value={{user.nick}}>
+                </div>
+                <hr>
+                <div class="input-group">
+                  <label for="update-introd">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-brush-fill" viewBox="0 0 16 16">
+                      <path d="M15.825.12a.5.5 0 0 1 .132.584c-1.53 3.43-4.743 8.17-7.095 10.64a6.067 6.067 0 0 1-2.373 1.534c-.018.227-.06.538-.16.868-.201.659-.667 1.479-1.708 1.74a8.118 8.118 0 0 1-3.078.132 3.659 3.659 0 0 1-.562-.135 1.382 1.382 0 0 1-.466-.247.714.714 0 0 1-.204-.288.622.622 0 0 1 .004-.443c.095-.245.316-.38.461-.452.394-.197.625-.453.867-.826.095-.144.184-.297.287-.472l.117-.198c.151-.255.326-.54.546-.848.528-.739 1.201-.925 1.746-.896.126.007.243.025.348.048.062-.172.142-.38.238-.608.261-.619.658-1.419 1.187-2.069 2.176-2.67 6.18-6.206 9.117-8.104a.5.5 0 0 1 .596.04z"/>
+                    </svg>
+                    소개</label>
+                  <input id="update-introd" type="text" name="introd" value="{{user.introd}}">
+                </div>
+                <hr>
+                <div class="input-group">
+                  <div>
+                    <label id="join-bgm" for="bgms">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-music-note-beamed" viewBox="0 0 16 16">
+                        <path d="M6 13c0 1.105-1.12 2-2.5 2S1 14.105 1 13c0-1.104 1.12-2 2.5-2s2.5.896 2.5 2zm9-2c0 1.105-1.12 2-2.5 2s-2.5-.895-2.5-2 1.12-2 2.5-2 2.5.895 2.5 2z"/>
+                        <path fill-rule="evenodd" d="M14 11V2h1v9h-1zM6 3v10H5V3h1z"/>
+                        <path d="M5 2.905a1 1 0 0 1 .9-.995l8-.8a1 1 0 0 1 1.1.995V3L5 4V2.905z"/>
+                      </svg>
+                      음악</label>
+                    {{user.bgm}}
+                    <input id="bgms" type="file" accept="audio/*">
+                    <input id="bgm-url" type="hidden" name="bgms" value="{{user.bgm}}">
+                  </div>
+                </div>
+                <hr>
+                <div class="btn-group w-100 align-items-center justify-content-between flex-wrap mb-3">
+                    <button id="update-btn" type="submit" class="btn btn-dark">수정 저장</button>
+                </div>
+              </fieldset>
+            </form>
+          {% if able!=1 %}
+          <div class="btn-group w-100 align-items-center justify-content-between flex-wrap">
+            <a id="profile-write" class="btn btn-outline-dark">프로필 수정</a>
+            <a id="logout" href="/auth/logout" class="btn btn-outline-dark">로그아웃</a>
+          </div>
+          {% endif %}
+          
+          {% endif %}
+          </div>
+        </div>
+        <div class="col">
+          <div class="h-100 p-5 text-white bg-dark rounded-3">
+          <div class="followings half ">
+            <h3>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-heart" viewBox="0 0 16 16">
+                <path fill-rule="evenodd" d="M8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z"/>
+                <path d="M2 2a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v13.5a.5.5 0 0 1-.777.416L8 13.101l-5.223 2.815A.5.5 0 0 1 2 15.5V2zm2-1a1 1 0 0 0-1 1v12.566l4.723-2.482a.5.5 0 0 1 .554 0L13 14.566V2a1 1 0 0 0-1-1H4z"/>
+              </svg>
+              팔로잉 목록</h3>
+            {% if user.Followings %}
+              {% for following in user.Followings %}
+                <div>{{following.nick}}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+          <div class="followers half">
+            <h3>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-bookmark-heart-fill" viewBox="0 0 16 16">
+                <path d="M2 15.5a.5.5 0 0 0 .74.439L8 13.069l5.26 2.87A.5.5 0 0 0 14 15.5V2a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v13.5zM8 4.41c1.387-1.425 4.854 1.07 0 4.277C3.146 5.48 6.613 2.986 8 4.412z"/>
+              </svg>
+              팔로워 목록</h3>
+            {% if user.Followers %}
+              {% for follower in user.Followers %}
+                <div>{{follower.nick}}</div>
+              {% endfor %}
+            {% endif %}
+          </div>
+        </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+{% block script %}
+<script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+      window.onload = () => {
+        if (new URL(location.href).searchParams.get('loginError')) {
+          alert(new URL(location.href).searchParams.get('loginError'));
+        }
+      };
+
+      if (document.getElementById('bgms')) {
+        document.getElementById('bgms').addEventListener('change', function(e) {
+          const formData = new FormData();
+          console.log(this, this.files);
+          formData.append('bgms', this.files[0]);
+          axios.post('/user/bgms', formData)
+            .then((res) => {
+                document.getElementById('bgm-url').value = res.data.url;
+                console.log(res.data.url);
+            })
+            .catch((err) => {
+              console.error(err);
+            });
+        });
+      }
+
+    if (document.getElementById('img2')) {
+      document.getElementById('img2').addEventListener('change', function(e) {
+        const formData = new FormData();
+        console.log(this, this.files);
+        formData.append('img1', this.files[0]);
+        axios.post('/user/img1', formData)
+          .then((res) => {
+            document.getElementById('img-url').value = res.data.url;
+            document.getElementById('img-preview').src = res.data.url;
+            document.getElementById('img-preview').style.display = 'inline';
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    }
+
+    if (document.getElementById('profile-write')){
+      document.getElementById('profile-write').addEventListener('click', function(e) {
+      location.href = `/profile/?able=1`;
+    });
+    }
+    
+  </script>
+{% endblock %}

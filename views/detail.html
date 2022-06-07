@@ -1,0 +1,193 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+
+<div class="timeline">
+  <div class="detailBg p-4">
+    <input id="postId" type="hidden" value="{{twit.id}}">
+    <input id="postUserId" type="hidden" value="{{twit.User.id}}">
+    {% if not followerIdList.includes(twit.User.id) and twit.User.id !== user.id %}
+          <button class="twit-follow float-end">팔로우하기</button>
+    {% elif followerIdList.includes(twit.User.id) and twit.User.id !== user.id%}
+            <button class="twit-unfollow float-end">팔로우 끊기</button>
+    {% endif %}
+    <div class="twit-author fs-3">{{twit.User.nick}}</div> 
+    
+    <div class="p-3 rounded-3 bg-light">
+      <div class="twit-content">{{twit.content}}</div>
+      {% if twit.img %}
+      <div class="twit-img"><img src="{{twit.img}}" alt="섬네일"></div>
+      {% endif %}
+    </div>
+    <p><font size="2">작성시간 : {{twit.createdAt}}</font></p>
+    <!-- 로그인 시 댓글 작성-->
+    {% if user and user.id === twit.User.id %}                
+                    <button class="twit-delete btn btn-danger btn-sm">삭제</button>   
+                    <button class="twit-update btn btn-info btn-sm">수정</button>                         
+                {% endif %}
+    {% if user %}
+    <hr>
+    <form id="twit-comment-form" class="p-3">
+      <input type="hidden" value="{{twit.User.id}}" class="twit-user-id">
+      <input id="twitId" type="hidden" value="{{twit.id}}" class="twit-id">
+      <div class="form-group mb-1">
+        <div class="twit-author">{{user.nick}}</div>
+        <textarea class="form-control"  id="twit" name="content" rows="3" maxlength="140"></textarea>
+        <button id="twit-btn" type="submit" class="btn btn-primary btn-sm mt-1">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+            <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+          </svg>
+        </button>
+      </div>
+    </form>
+    {% endif %}
+  </div>
+  <br>
+  <!-- 댓글 리스트 -->
+  {% for comment in comments %}
+    <div class="comments">
+      <div class="comment">
+          {% if user and user.id === comment.User.id %}
+          <!-- <button class="comment-delete btn btn-outline-secondary btn-sm float-end">삭제</button> -->
+          <p class="comment-delete float-end">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="red" class="bi bi-x-circle-fill" viewBox="0 0 16 16">
+              <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zM5.354 4.646a.5.5 0 1 0-.708.708L7.293 8l-2.647 2.646a.5.5 0 0 0 .708.708L8 8.707l2.646 2.647a.5.5 0 0 0 .708-.708L8.707 8l2.647-2.646a.5.5 0 0 0-.708-.708L8 7.293 5.354 4.646z"/>
+            </svg>
+          </p>
+          
+          {% endif %}
+          <div class="comment-author">{{comment.User.nick}}</div>
+          <div class="twit-content">{{comment.content}}</div>
+          <input type="hidden" value="{{comment.id}}" id="comment-id">
+          <input type="hidden" value="{{comment.User.id}}" id="comment-user-id">
+          <hr>
+      </div>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+  document.querySelectorAll('.twit-follow').forEach(function (tag) {
+    tag.addEventListener('click', function () {
+      const myId = document.querySelector('#my-id');
+      if (myId) {
+        const userId = document.getElementById('postUserId').value;
+        if (userId !== myId.value) {
+          if (confirm('팔로잉하시겠습니까?')) {
+            axios.post(`/user/${userId}/follow`)
+              .then(() => {
+                location.reload();
+              })
+              .catch((err) => {
+                console.error(err);
+              });
+          }
+        }
+      }
+    });
+  });
+  document.querySelectorAll('.twit-unfollow').forEach(function(tag) {
+      tag.addEventListener('click', function() {
+        const myId = document.querySelector('#my-id');
+        if (myId) {
+          const userId = document.getElementById('postUserId').value;
+          if (userId !== myId.value) {
+            if (confirm('언팔로우 하시겠습니까?')) {
+              axios.post(`/user/${userId}/unfollow`)
+                .then(() => {
+                  location.reload();
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            }
+          }
+        }
+      });
+    });
+
+  document.getElementById('twit-comment-form').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const comment = e.target.content.value;
+    const twitId = e.target.twitId.value;
+
+    if (!comment) {
+      return alert('내용을 입력하세요');
+    }
+    axios.post(`/post/${twitId}/comment`, { content: comment })
+      .then(() => {
+        location.reload();
+      })
+      .catch((err) => {
+        console.error(err);
+      });
+  });
+
+  document.querySelectorAll('.comment-delete').forEach(function(tag) {
+      tag.addEventListener('click', function() {
+        const myId = document.querySelector('#my-id');
+        const twitId = document.getElementById('postId').value;
+        const commentId = document.getElementById('comment-id').value;
+        if (myId) {
+          const userId =  document.getElementById('comment-user-id').value;
+          if (myId.value === userId) {
+            if (confirm('게시물을 삭제하시겠습니까?')) {
+              axios.delete(`/post/${twitId}/${commentId}`)
+                .then(() => {
+                  location.reload();
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            }
+          }
+        }
+      });
+    });
+
+    document.querySelectorAll('.twit-delete').forEach(function(tag) {
+      tag.addEventListener('click', function() {
+        const myId = document.querySelector('#my-id');
+        const twitId = document.getElementById('postId').value;
+        if (myId) {
+          const userId = document.getElementById('postUserId').value;
+          if (userId === myId.value) {
+            if (confirm('게시물을 삭제하시겠습니까?')) {
+              axios.delete(`/post/${twitId}`)
+                .then(() => {
+                  location.href = '/';
+                })
+                .catch((err) => {
+                  console.error(err);
+                });
+            }
+          }
+        }
+      });
+    });
+    document.querySelectorAll('.twit-update').forEach(function(tag) {
+      tag.addEventListener('click', function() {
+        const myId = document.querySelector('#my-id');
+        const twitId = document.getElementById('postId').value;
+        
+        console.log(twitId);
+        if (myId) {
+          const userId = document.getElementById('postUserId').value;
+          if (userId === myId.value) {
+            if (confirm('게시물을 수정하시겠습니까?')) {
+              try{
+                location.href = `/update/?twitId=${twitId}`;
+              }catch(err){
+                console.error(err);
+              }          
+            }
+          }
+        }
+      });
+    });
+
+</script>
+
+{% endblock %}

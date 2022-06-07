@@ -1,0 +1,98 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+    <div class="detail">
+      {% if user %}
+        <div class="m-3 rounded-3">
+          <form id="twit-update-form">
+            <input type="hidden" value="{{twit.User.id}}" class="twit-user-id">
+            <input id = "twitId" type="hidden" value="{{twit.id}}" class="twit-id">
+            <div class="form-group mb-1">
+              <label for="exampleFormControlTextarea1">{{twit.updatedAt}}</label>
+              <textarea class="form-control" id="content" name="content" rows="5" maxlength="140">{{twit.content}}</textarea>
+            </div>
+            <!-- <div class="input-group">
+              <textarea id="content" name="content" rows="50" maxlength="140">{{twit.content}}</textarea>
+            </div> -->
+            
+            <div class="img-preview mb-3">
+                {% if twit.img %}
+                <img id="img-preview" src="{{twit.img}}" style="display: inline;" width="250" alt="미리보기">
+                {% else %}
+                <img id="img-preview" src="" style="display: none;" width="250" alt="미리보기">
+                {% endif %} 
+                <input id="img-url" type="hidden" name="url" value="{{twit.img}}">            
+            </div>
+            <div>
+              {% if twit.img %}
+              <label id="img-label" for="img" class="btn btn-outline-danger">사진 교체</label>
+              <input id="img" type="file" accept="image/*">
+              <input id="img-delete" type="button" value="사직 삭제" class="btn btn-outline-danger">              
+              {% else %}
+              <label id="img-label" for="img" class="btn btn-outline-danger">사진 업로드</label>
+              <input id="img" type="file" accept="image/*">             
+              {% endif %} 
+              <button id="twit-btn" type="submit" class="btn btn-danger">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-send-fill" viewBox="0 0 16 16">
+                  <path d="M15.964.686a.5.5 0 0 0-.65-.65L.767 5.855H.766l-.452.18a.5.5 0 0 0-.082.887l.41.26.001.002 4.995 3.178 3.178 4.995.002.002.26.41a.5.5 0 0 0 .886-.083l6-15Zm-1.833 1.89L6.637 10.07l-.215-.338a.5.5 0 0 0-.154-.154l-.338-.215 7.494-7.494 1.178-.471-.47 1.178Z"/>
+                </svg>
+              </button>
+            </div>
+            <br>
+            <br>
+          </form>
+        </div>
+      {% endif %}
+    </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    if (document.getElementById('img')) {
+      document.getElementById('img').addEventListener('change', function(e) {
+        const formData = new FormData();
+        console.log(this, this.files);
+        formData.append('img', this.files[0]);
+        axios.post('/post/img', formData)
+          .then((res) => {
+            document.getElementById('img-url').value = res.data.url;
+            document.getElementById('img-preview').src = res.data.url;            
+            document.getElementById('img-preview').style.display = 'inline';
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    }
+
+    //사진 삭제 요청
+    if (document.getElementById('img-delete')){
+      document.getElementById('img-delete').addEventListener('click', function(e) {
+        document.getElementById('img-url').value = "";
+        document.getElementById('img-preview').src = "";            
+        document.getElementById('img-preview').style.display = 'none';
+      });
+    }
+   
+
+    //수정 요청
+    document.getElementById('twit-update-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const newContent = e.target.content.value;
+        const newImg = document.getElementById('img-url').value;
+        const twitId = e.target.twitId.value;
+        if (!newContent && !newImg) {
+            return alert('내용을 입력하세요');
+        }
+        axios.patch(`/post/${twitId}`, { content: newContent, url: newImg })
+            .then(() => {
+                //location.href = "/";
+                location.href = `/detail/?twitId=${twitId}`;
+            })
+            .catch((err) => {
+            console.error(err);
+            });
+    });
+    
+  </script>
+{% endblock %}

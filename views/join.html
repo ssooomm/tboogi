@@ -1,0 +1,91 @@
+{% extends 'layout.html' %}
+
+{% block content %}
+  <div class="timeline">
+    <form id="join-form" action="/auth/join" method="post">
+      <div class="input-group">
+        <label for="join-email">이메일</label>
+        <input id="join-email" type="email" name="email">
+      </div>
+      <div class="input-group">
+        <label for="join-nick">닉네임</label>
+        <input id="join-nick" type="text" name="nick">
+      </div>
+      <div class="input-group">
+        <label for="join-password">비밀번호</label>
+        <input id="join-password" type="password" name="password">
+      </div>
+      <div class="input-group">
+        <label for="join-introd">소개</label>
+        <input id="join-introd" type="text" name="introd">
+      </div>
+      <div class="input-group">
+        <div>
+          <label id="join-pic" for="img1">프로필사진</label>
+          <input id="img1" type="file" accept="image/*">
+        </div>
+        <div class="img-preview mx-auto mt-3">
+          <img id="img-preview" src="" style="display: none;" width="250" alt="미리보기" class="border border-secondary">
+          <!-- img파일을 주지 않을 경우 default이미지가 들어감 -->
+          <input id="img-url" type="hidden" name="url" value="/img1/default.png">
+        </div>
+      </div>
+      <div class="input-group">
+        <div>
+          <label id="join-bgm" for="bgms">프로필음악</label>
+          <input id="bgms" type="file" accept="audio/*">
+          <input id="bgm-url" type="hidden" name="bgms">
+        </div>
+      </div>
+      <div class="">
+        <button id="join-btn" type="submit" class="btn btn-warning">회원가입</button>
+      </div>  
+      
+    </form>
+  </div>
+{% endblock %}
+
+{% block script %}
+  <script>
+    window.onload = () => {
+      if (new URL(location.href).searchParams.get('error')) {
+        alert('이미 존재하는 이메일입니다.');
+      }
+    };
+
+    if (document.getElementById('img1')) {
+      document.getElementById('img1').addEventListener('change', function(e) {
+        const formData = new FormData();
+        console.log(this, this.files);
+        formData.append('img1', this.files[0]);
+        axios.post('/user/img1', formData)
+          .then((res) => {
+            document.getElementById('img-url').value = res.data.url;
+            document.getElementById('img-preview').src = res.data.url;
+            document.getElementById('img-preview').style.display = 'inline';
+            console.log(res.data.url);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    }
+
+    if (document.getElementById('bgms')) {
+      document.getElementById('bgms').addEventListener('change', function(e) {
+        const formData = new FormData();
+        console.log(this, this.files);
+        formData.append('bgms', this.files[0]);
+        axios.post('/user/bgms', formData)
+          .then((res) => {
+              document.getElementById('bgm-url').value = res.data.url;
+              console.log(res.data.url);
+          })
+          .catch((err) => {
+            console.error(err);
+          });
+      });
+    }
+
+  </script>
+{% endblock %}
